@@ -1,7 +1,7 @@
-import { buildSupportCodeLibrary } from "../helpers/runtime_helpers";
-import { ITestFormatterOptions, runFeatures } from "../helpers/formatter_helpers";
 import { Status } from "allure-js-commons";
 import { expect } from "chai";
+import { ITestFormatterOptions, runFeatures } from "../helpers/formatter_helpers";
+import { buildSupportCodeLibrary } from "../helpers/runtime_helpers";
 
 const dataSet: { [name: string]: ITestFormatterOptions } = {
   simple: {
@@ -77,8 +77,9 @@ const dataSet: { [name: string]: ITestFormatterOptions } = {
   attachments: {
     supportCodeLibrary: buildSupportCodeLibrary(({ Given }) => {
       Given("a step", (world) => {
-        console.log("bhas", world.attach)
-        world.attach("some text")
+        // eslint-disable-next-line no-console
+        console.log("bhas", world.attach);
+        world.attach("some text");
       });
     }),
     sources: [
@@ -90,7 +91,7 @@ const dataSet: { [name: string]: ITestFormatterOptions } = {
   },
 };
 
-describe("CucumberJSAllureReporter", async () => {
+describe("CucumberJSAllureReporter", () => {
   it("should set name", async () => {
     const results = await runFeatures(dataSet.simple);
 

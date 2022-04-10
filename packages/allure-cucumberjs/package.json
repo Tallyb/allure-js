@@ -1,5 +1,5 @@
 {
-  "name": "allure-cucumberjs",
+  "name": "allure-cucumberjs8",
   "version": "2.0.0-beta.15",
   "description": "Allure Cucumber.JS integration",
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     "test": "nyc ts-node --project test/tsconfig.json test/runner.ts"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^7.3.1",
+    "@cucumber/cucumber": "^8.0.0",
     "@types/chai": "^4.2.21",
     "@types/fs-extra": "^9.0.1",
     "@types/glob": "^7.1.4",
@@ -42,6 +42,7 @@
     "verror": "^1.10.0"
   },
   "dependencies": {
+    "@cucumber/gherkin-utils": "^7.0.0",
     "allure-js-commons": "workspace:*"
   },
   "files": [
