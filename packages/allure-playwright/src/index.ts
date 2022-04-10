@@ -25,16 +25,30 @@ import {
   ExecutableItemWrapper,
   InMemoryAllureWriter,
   LabelName,
+  LinkType,
   Status,
 } from "allure-js-commons";
+
+import { ALLURE_METADATA_CONTENT_TYPE, Metadata } from "./helpers";
+
+type AllureReporterOptions = {
+  outputFolder?: string;
+};
 
 class AllureReporter implements Reporter {
   config!: FullConfig;
   suite!: Suite;
+  resultsDir!: string;
+  options: AllureReporterOptions;
+
+  constructor(options: AllureReporterOptions = {}) {
+    this.options = options;
+  }
 
   onBegin(config: FullConfig, suite: Suite): void {
     this.config = config;
     this.suite = suite;
+    this.resultsDir = allureReportFolder(this.options.outputFolder);
   }
 
   onTimeout(): void {
@@ -45,8 +59,7 @@ class AllureReporter implements Reporter {
     const writerForTest = process.env.PW_ALLURE_POST_PROCESSOR_FOR_TEST
       ? new InMemoryAllureWriter()
       : undefined;
-    const resultsDir = process.env.ALLURE_RESULTS_DIR || path.join(process.cwd(), "allure-results");
-    const runtime = new AllureRuntime({ resultsDir, writer: writerForTest });
+    const runtime = new AllureRuntime({ resultsDir: this.resultsDir, writer: writerForTest });
     const processSuite = (suite: Suite, parent: AllureGroup | AllureRuntime): void => {
       const groupName = "Root";
       const group = parent.startGroup(groupName);
@@ -90,6 +103,20 @@ class AllureReporter implements Reporter {
 
           for (const attachment of result.attachments) {
             if (!attachment.body && !attachment.path) {
+              continue;
+            }
+
+            if (attachment.contentType === ALLURE_METADATA_CONTENT_TYPE) {
+              if (!attachment.body) {
+                continue;
+              }
+
+              const metadata: Metadata = JSON.parse(attachment.body.toString());
+              metadata.links?.forEach((val) => allureTest.addLink(val.url, val.name, val.type));
+              metadata.labels?.forEach((val) => allureTest.addLabel(val.name, val.value));
+              if (metadata.description) {
+                allureTest.description = metadata.description;
+              }
               continue;
             }
 
@@ -175,3 +202,19 @@ const appendStep = (parent: ExecutableItemWrapper, step: TestStep) => {
     appendStep(allureStep, child);
   }
 };
+
+const allureReportFolder = (outputFolder?: string): string => {
+  if (process.env.ALLURE_RESULTS_DIR) {
+    return path.resolve(process.cwd(), process.env.ALLURE_RESULTS_DIR);
+  }
+  if (outputFolder) {
+    return outputFolder;
+  }
+  return defaultReportFolder();
+};
+
+const defaultReportFolder = (): string => {
+  return path.resolve(process.cwd(), "allure-results");
+};
+
+export * from "./helpers";

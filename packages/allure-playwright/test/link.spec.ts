@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-import { expect, test } from "./fixtures";
-
-test("should report test status details", async ({ runInlineTest }) => {
-  const result = await runInlineTest(
+import { Label } from "allure-js-commons";
+import { test, expect } from "./fixtures";
+test("should have link", async ({ runInlineTest }) => {
+  const result: Label[] = await runInlineTest(
     {
       "a.test.ts": `
-      import { test, expect } from '@playwright/test';
-      test('should fail', async ({}) => {
-        expect(true).toBe(false);
+      import { test } from '@playwright/test';
+      import { allure } from '../../dist/index'
+      test('should add epic link', async ({}, testInfo) => {
+          allure.link({url:"https://playwright.dev/docs/api/class-page#page-workers"});
       });
-    `,
+      `,
     },
     (writer) => {
-      return writer.tests[0].statusDetails;
+      return writer.tests.map(val => val.links);
     },
   );
-  expect(result.message).toContain("Object.is equality");
-  expect(result.trace).toContain("at ");
-  expect(result.trace.trim().startsWith("at ")).toBeTruthy();
+
+  expect(result[0]).toContainEqual({
+    url: "https://playwright.dev/docs/api/class-page#page-workers",
+  });
 });
