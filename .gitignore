@@ -40,3 +40,5 @@ dist-tests
 schema
 build
 /*/allure-results/
+.nyc_output
+
